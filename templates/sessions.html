@@ -4,12 +4,15 @@
 
 {% block content %}
 <h1> My workouts</h1>
+    {# "workout" is the WorkoutTracker passed in by show_tracker() in app.py. #}
+    {# Loops mirror the data: sessions > exercises > sets #}
     {% for session in workout.sessions %}
     <h2>{{ session.date }}</h2>
     <ul>
         {% for exercise in session.exercises %}
         <li> {{ exercise.name }} 
             <ul>
+                {# "s" instead of "set", which is also a Jinja keyword #}
                 {% for s in exercise.sets %}
                 <li> Weight: {{ s.weight }}
                     Reps: {{ s.reps }}

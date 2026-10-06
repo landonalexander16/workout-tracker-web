@@ -1,15 +1,18 @@
+{# Shared layout. Every page extends this file and fills in the two blocks below. #}
 <!doctype html>
 <html>
 <head>
     <title> {% block title %}Workout Tracker{% endblock %}</title>
 </head>
 <body>
+    {# url_for takes the name of the Python function behind each route, not the URL path #}
     <nav>
         <a href="{{ url_for('home')}}">Home</a>
         <a href="{{ url_for('show_tracker')}}">Logged Sessions</a>
         <a href="{{ url_for('add')}}">Add Session</a>
     </nav>
 
+    {# Each child template's content replaces this block #}
     {% block content %}{% endblock %}
 </body>
 </html>
