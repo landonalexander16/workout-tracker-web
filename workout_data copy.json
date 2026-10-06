@@ -123,20 +123,6 @@
                     ]
                 }
             ]
-        },
-        {
-            "date": "2026-10-21",
-            "exercises": [
-                {
-                    "exercise": "bench press",
-                    "sets": [
-                        {
-                            "weight": 150.0,
-                            "reps": 5
-                        }
-                    ]
-                }
-            ]
         }
     ]
 }
