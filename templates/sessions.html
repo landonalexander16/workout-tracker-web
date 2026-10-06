@@ -1,0 +1,17 @@
+<h1> My workouts</h1>
+    {% for session in workout.sessions %}
+    <h2>{{ session.date }}</h2>
+    <ul>
+        {% for exercise in session.exercises %}
+        <li> {{ exercise.name }} 
+            <ul>
+                {% for s in exercise.sets %}
+                <li> Weight: {{ s.weight }}
+                    Reps: {{ s.reps }}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endfor %}

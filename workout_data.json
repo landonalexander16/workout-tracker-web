@@ -1,0 +1,128 @@
+{
+    "sessions": [
+        {
+            "date": "2026-01-01",
+            "exercises": [
+                {
+                    "exercise": "bench",
+                    "sets": [
+                        {
+                            "weight": 120.0,
+                            "reps": 3
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-08-12",
+            "exercises": [
+                {
+                    "exercise": "bench",
+                    "sets": [
+                        {
+                            "weight": 120.0,
+                            "reps": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-08-17",
+            "exercises": [
+                {
+                    "exercise": "deadlift",
+                    "sets": [
+                        {
+                            "weight": 50.0,
+                            "reps": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-10-01",
+            "exercises": [
+                {
+                    "exercise": " Bench Press",
+                    "sets": [
+                        {
+                            "weight": 120.0,
+                            "reps": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-10-05",
+            "exercises": [
+                {
+                    "exercise": "lat pulldown",
+                    "sets": [
+                        {
+                            "weight": 60.0,
+                            "reps": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-10-1",
+            "exercises": [
+                {
+                    "exercise": "Bench Press",
+                    "sets": [
+                        {
+                            "weight": 130.0,
+                            "reps": 5
+                        },
+                        {
+                            "weight": 130.0,
+                            "reps": 3
+                        }
+                    ]
+                },
+                {
+                    "exercise": " High to Low Fly",
+                    "sets": [
+                        {
+                            "weight": 30.0,
+                            "reps": 7
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "date": "2026-10-12",
+            "exercises": [
+                {
+                    "exercise": "squat",
+                    "sets": [
+                        {
+                            "weight": 120.0,
+                            "reps": 5
+                        },
+                        {
+                            "weight": 120.0,
+                            "reps": 4
+                        }
+                    ]
+                },
+                {
+                    "exercise": "deadlift",
+                    "sets": [
+                        {
+                            "weight": 50.0,
+                            "reps": 4
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
