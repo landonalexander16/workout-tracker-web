@@ -1,6 +1,7 @@
 import json
 from models import WorkoutTracker, Session, Exercise, Sets
 from flask import Flask, render_template, request, redirect, url_for
+import os
 
 app = Flask(__name__)
 
@@ -9,9 +10,17 @@ def home():
     return "..."
     
 def load_tracker():
-    with open("workout_data.json", "r") as f:
-        data = json.load(f)
-    return WorkoutTracker.from_dict(data)
+    if not os.path.exists("workout_data.json"):
+        return WorkoutTracker()
+
+    try:
+        with open("workout_data.json", "r") as f:
+            data = json.load(f)
+        return WorkoutTracker.from_dict(data)
+    except(json.JSONDecodeError, KeyError):
+        os.replace("workout_data.json", "workout_data.corrupt.json")
+        return WorkoutTracker()
+
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
