@@ -1,2 +1,4 @@
 venv/
-workout_data.coprrupt.json
+__pycache__/
+workout_data.json
+workout_data.corrupt.json
