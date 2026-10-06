@@ -1,3 +1,14 @@
+"""Data models for the workout tracker: Sets, Exercise, Session, and WorkoutTracker.
+
+Ported from the original command-line version:
+https://github.com/landonalexander16/workout-tracker
+
+Changes from the CLI version:
+- Removed the input()-based methods and main(), since the web app takes
+  input through forms instead of the terminal
+- Everything else (the class hierarchy and the to_dict()/from_dict()
+  JSON serialization) is unchanged
+"""
 
 class Sets:
     def __init__(self, weight, reps):
