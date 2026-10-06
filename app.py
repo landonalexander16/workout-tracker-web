@@ -1,6 +1,6 @@
 import json
 from models import WorkoutTracker
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -12,6 +12,12 @@ def load_tracker():
     with open("workout_data.json", "r") as f:
         data = json.load(f)
     return WorkoutTracker.from_dict(data)
+
+@app.route("/add", methods=["GET", "POST"])
+def add():
+    if request.method == "POST":
+        print(request.form)
+    return render_template("add_sessions.html")
 
 @app.route("/tracker")
 def show_tracker():
