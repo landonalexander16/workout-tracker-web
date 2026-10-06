@@ -16,19 +16,37 @@ def load_tracker():
 @app.route("/add", methods=["GET", "POST"])
 def add():
     if request.method == "POST":
+        tracker = load_tracker()
+
         weight = float(request.form["weight"])
         reps = int(request.form["reps"])
-        exercise_name = request.form["exercise"]
+        sets = Sets(weight, reps)
+        name = request.form["exercise"].strip()
         date = request.form["date"]
 
-        sets = Sets(weight, reps)
-        exercise = Exercise(exercise_name)
-        exercise.add_sets(sets)
-        session = Session(date)
-        session.add_exercise(exercise)
 
-        tracker = load_tracker()
-        tracker.add_session(session)
+        session = None
+        for s in tracker.sessions:
+            if s.date == date:
+                session = s
+                break
+
+        if session is None:
+            session = Session(date)
+            tracker.add_session(session)
+
+        exercise = None
+        for e in session.exercises:
+            if e.name.lower() == name.lower():
+                exercise = e
+                break
+
+        if exercise is None:
+            exercise = Exercise(name)
+            session.add_exercise(exercise)
+
+
+        exercise.add_sets(sets)
         tracker.sessions = sorted(tracker.sessions, key = lambda s : s.date)
 
         with open("workout_data.json", "w") as f:

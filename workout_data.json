@@ -71,6 +71,33 @@
             ]
         },
         {
+            "date": "2026-10-06",
+            "exercises": [
+                {
+                    "exercise": "squat",
+                    "sets": [
+                        {
+                            "weight": 20.0,
+                            "reps": 5
+                        },
+                        {
+                            "weight": 20.0,
+                            "reps": 5
+                        }
+                    ]
+                },
+                {
+                    "exercise": "bench press",
+                    "sets": [
+                        {
+                            "weight": 20.0,
+                            "reps": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "date": "2026-10-1",
             "exercises": [
                 {
