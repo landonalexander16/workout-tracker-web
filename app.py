@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "..."
+    my_tracker = load_tracker()
+    return render_template("home.html", sessions=len(my_tracker.sessions))
     
 def load_tracker():
     if not os.path.exists("workout_data.json"):
@@ -28,7 +29,8 @@ def add():
     error = None
     if request.method == "POST":
         try: 
-            date = datetime.strptime(request.form["date"], "%Y-%m-%d")
+            date = request.form["date"]
+            datetime.strptime(date, "%Y-%m-%d")
             weight = float(request.form["weight"])
             if weight < 0:
                 raise ValueError ("Weight must be a number greater than or equal to zero.")

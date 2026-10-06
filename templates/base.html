@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+    <title> {% block title %}Workout Tracker{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home')}}">Home</a>
+        <a href="{{ url_for('show_tracker')}}">Logged Sessions</a>
+        <a href="{{ url_for('add')}}">Add Session</a>
+    </nav>
+
+    {% block content %}{% endblock %}
+</body>
+</html>

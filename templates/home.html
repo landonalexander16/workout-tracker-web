@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <h1>Workout Tracker</h1>
+  <p>Track the workouts you've done.</p>
+
+  <a href="{{ url_for('add') }}">Add a session</a>
+  <a href="{{ url_for('show_tracker') }}">View past sessions</a>
+
+  <p>{{ sessions }} session(s) logged so far.</p>
+{% endblock %}
