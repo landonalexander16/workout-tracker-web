@@ -28,13 +28,13 @@ def load_tracker():
         return WorkoutTracker()
 
 def max_weight_by_exercise(tracker):
-    best = {}                                    # exercise name -> highest weight used so far
+    best = {}                                    # exercise name -> highest weight and reps logged so far
     for session in tracker.sessions:             # level 1
         for exercise in session.exercises:       # level 2: the thing we group by
             key = exercise.name.lower()          # same exercise in any capitalization
             for s in exercise.sets:              # level 3: the values we compare
-                if key not in best or s.weight > best[key]:     # This condition allows a weight of 0 be stored
-                    best[key] = s.weight
+                if key not in best or (s.weight, s.reps) > best[key]:     # This condition allows a weight of 0 be stored
+                    best[key] = (s.weight, s.reps)
     return best
 
 
