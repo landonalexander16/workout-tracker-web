@@ -1,0 +1,32 @@
+{# Line chart of the heaviest weight lifted per date for one exercise. #}
+{# "title" (the exercise name) and "points" (a list of [date, weight] pairs) #}
+{# are passed in by the progress route in app.py. #}
+{% extends "base.html" %}
+{% block title %}Progress{% endblock %}
+
+{% block content %}
+<h1> {{ title|title }}: Weight by Date</h1>
+
+{# An unknown exercise gives an empty list, so show a message instead of a blank chart #}
+{% if points %}
+    <canvas id="chart"></canvas>
+
+    {# Chart.js must load before the script below that uses it #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Jinja turns the Python list into a JavaScript array before the browser sees the page
+        const points = {{ points|tojson }};
+
+        new Chart(document.getElementById("chart"), {
+            type: "line",
+            data: {
+                // each point is [date, weight]: p[0] feeds the x-axis, p[1] the y-axis
+                labels: points.map(p => p[0]),
+                datasets: [{ label: "Max Weight", data: points.map(p => p[1]) }]
+            }
+        });
+    </script>
+{% else %}
+    <p> Nothing logged for this exercise yet.</p>
+{% endif %}
+{% endblock %}

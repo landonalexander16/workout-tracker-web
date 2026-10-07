@@ -1,6 +1,7 @@
 """Flask web interface for the workout tracker.
 
-Routes: home(summary), add(log a set), show_tracker (view history).
+Routes: home(summary), add(log a set), show_tracker (view history), 
+        stats (show max weight and reps per exercise), progress (show max weight over time).
 Data is stored in workout_data.json and loaded fresh on each request.
 """
 import json
@@ -28,6 +29,12 @@ def load_tracker():
         return WorkoutTracker()
 
 def max_weight_by_exercise(tracker):
+    """Return {exercise name (lowercase): (weight, reps)} for each exercise's best set.
+
+    Names are lowercased so "Bench" and "bench" count as one exercise. The best set is
+    the heaviest; ties go to the set with more reps.
+    """
+
     best = {}                                    # exercise name -> highest weight and reps logged so far
     for session in tracker.sessions:             # level 1
         for exercise in session.exercises:       # level 2: the thing we group by
@@ -38,6 +45,12 @@ def max_weight_by_exercise(tracker):
     return best
 
 def weight_over_time(tracker, name):
+    """Return [(date, heaviest weight that day), ...] for one exercise.
+
+    Sessions are already stored in date order, so the list is too.
+    Dates where the exercise wasn't done are left out.
+    """
+     
     points = []
     for session in tracker.sessions:            
         best = None
@@ -46,7 +59,7 @@ def weight_over_time(tracker, name):
                 for s in exercise.sets:
                     if best is None or s.weight > best:
                         best = s.weight
-        if best is not None:
+        if best is not None:                    # None means "not found yet", so a weight of 0 still counts.
             points.append((session.date, best))
     return points
 
@@ -126,7 +139,7 @@ def add():
             return redirect(url_for("show_tracker"))
         
     # Reached on a plain FET, or when validation failed (error is set)
-    return render_template("add_sessions.html", error=error)
+    return render_template("add.html", error=error)
 
 
 @app.route("/tracker")
@@ -141,11 +154,10 @@ def stats():
     result = max_weight_by_exercise(my_tracker)
     return render_template("stats.html", stat=result)
 
-@app.route("/progress-test")
-def progress_test():
-    my_tracker = load_tracker()
-    print(weight_over_time(my_tracker, "bench press"))
-    return "ok"
+@app.route("/progress/<name>")     # <name> in the URL becomes the function argument.
+def progress(name):
+    points = weight_over_time(load_tracker(), name)
+    return render_template("progress.html", name=name, points=points)
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying
