@@ -10,12 +10,6 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-
-@app.route("/")
-def home():
-    my_tracker = load_tracker()
-    # Pass only the count; homepage doesn't need the full tracker
-    return render_template("home.html", sessions=len(my_tracker.sessions))
     
 def load_tracker():
     # No file yet (first run or fresh clone): start with an empty tracker
@@ -32,6 +26,23 @@ def load_tracker():
         # because Windows won't move a file that's still open.
         os.replace("workout_data.json", "workout_data.corrupt.json")
         return WorkoutTracker()
+
+def max_weight_by_exercise(tracker):
+    best = {}                                    # exercise name -> highest weight used so far
+    for session in tracker.sessions:             # level 1
+        for exercise in session.exercises:       # level 2: the thing we group by
+            key = exercise.name.lower()          # same exercise in any capitalization
+            for s in exercise.sets:              # level 3: the values we compare
+                if key not in best or s.weight > best[key]:     # This condition allows a weight of 0 be stored
+                    best[key] = s.weight
+    return best
+
+
+@app.route("/")
+def home():
+    my_tracker = load_tracker()
+    # Pass only the count; homepage doesn't need the full tracker
+    return render_template("home.html", sessions=len(my_tracker.sessions))
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -110,6 +121,13 @@ def show_tracker():
     my_tracker = load_tracker()
     # The template refers to this object as "workout"
     return render_template("sessions.html", workout=my_tracker)
+
+@app.route("/stats")
+def stats():
+    my_tracker = load_tracker()
+    result = max_weight_by_exercise(my_tracker)
+    print(result)
+    return str(result)
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying
