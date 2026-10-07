@@ -37,6 +37,19 @@ def max_weight_by_exercise(tracker):
                     best[key] = (s.weight, s.reps)
     return best
 
+def weight_over_time(tracker, name):
+    points = []
+    for session in tracker.sessions:            
+        best = None
+        for exercise in session.exercises:
+            if exercise.name.lower() == name.lower():
+                for s in exercise.sets:
+                    if best is None or s.weight > best:
+                        best = s.weight
+        if best is not None:
+            points.append((session.date, best))
+    return points
+
 
 @app.route("/")
 def home():
@@ -127,6 +140,12 @@ def stats():
     my_tracker = load_tracker()
     result = max_weight_by_exercise(my_tracker)
     return render_template("stats.html", stat=result)
+
+@app.route("/progress-test")
+def progress_test():
+    my_tracker = load_tracker()
+    print(weight_over_time(my_tracker, "bench press"))
+    return "ok"
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying
