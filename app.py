@@ -126,8 +126,7 @@ def show_tracker():
 def stats():
     my_tracker = load_tracker()
     result = max_weight_by_exercise(my_tracker)
-    print(result)
-    return str(result)
+    return render_template("stats.html", stat=result)
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying

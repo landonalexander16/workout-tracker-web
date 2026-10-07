@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Stats{% endblock %}
+
+{% block content %}
+
+{% if stat %}
+<table>
+    <tr><th>Exercise</th><th>Max Weight</th></tr>
+    {% for exercise, weight in stat.items() %}
+    <tr><td>{{ exercise|title }}</td><td>{{ weight }}</td></tr>
+    {% endfor %}
+</table>
+{% else %}
+    <p>There are no logged sessions currently.</p>
+{% endif %}
+{% endblock %}
