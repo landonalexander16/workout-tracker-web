@@ -9,7 +9,7 @@
 <table>
     <tr><th>Exercise</th><th>Max Weight</th><th>Reps at Max Weight</th></tr>
     {% for exercise, best in stat.items() %}
-    <tr><td>{{ exercise|title }}</td><td>{{ best[0] }}</td><td>{{ best[1] }}</td></tr>
+    <tr><td><a href="{{ url_for('progress', name=exercise) }}">{{ exercise|title }}</a></td><td>{{ best[0] }}</td><td>{{ best[1] }}</td></tr>
     {% endfor %}
 </table>
 {% else %}
