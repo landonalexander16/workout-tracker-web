@@ -1,3 +1,4 @@
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -10,10 +11,11 @@ class User(db.Model):
     workouts = db.relationship("Workout", backref="athlete", cascade="all, delete-orphan")
 
 class Workout(db.Model):
+    __table_args__ = (db.UniqueConstraint("user_id", "date"),)
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    exercises = db.relationship("WorkoutExercise", backref="workout", cascade = "all, delete-orphan")
+    exercises = db.relationship("WorkoutExercise", backref="workout", cascade ="all, delete-orphan")
 
 class WorkoutExercise(db.Model):
     id = db.Column(db.Integer, primary_key=True)

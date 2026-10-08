@@ -9,8 +9,11 @@ from models import WorkoutTracker, Session, Exercise, Sets
 from flask import Flask, render_template, request, redirect, url_for
 import os
 from datetime import datetime
+from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///workout.db"
+db.init_app(app)
     
 def load_tracker():
     # No file yet (first run or fresh clone): start with an empty tracker
@@ -158,6 +161,10 @@ def stats():
 def progress(name):
     points = weight_over_time(load_tracker(), name)
     return render_template("progress.html", name=name, points=points)
+
+with app.app_context():
+    db.create_all()
+
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying
