@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, redirect, url_for, abort
 from datetime import datetime
 from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 import os
-from flask_login import LoginManager, login_user, logout_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -28,21 +28,9 @@ login_manager.login_view = "login"
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-def get_demo_user():
-    """Return the placeholder user, creating it on first use.
-
-    Replaced by the logged-in user once login is added.
-    """
-    user = User.query.filter_by(username="demo").first()
-    if user is None:
-        user = User(username="demo", password_hash="placeholder")
-        db.session.add(user)
-        db.session.commit()
-    return user
-
 def get_workouts():
     """Return the demo user's workouts, oldest first (the database sorts by date)."""
-    user = get_demo_user()
+    user = current_user
     return Workout.query.filter_by(user_id=user.id).order_by(Workout.date).all()
 
 def max_weight_by_exercise(workouts):
@@ -90,19 +78,19 @@ def parse_set_form(form):
 
 def get_my_set(set_id):
     s = db.get_or_404(WorkoutSet, set_id)
-    if s.exercise.workout.user_id != get_demo_user().id:
+    if s.exercise.workout.user_id != current_user.id:
         abort(404)
     return s
 
 def get_my_exercise(exercise_id):
     exercise = db.get_or_404(WorkoutExercise, exercise_id)
-    if exercise.workout.user_id != get_demo_user().id:
+    if exercise.workout.user_id != current_user.id:
         abort(404)
     return exercise
 
 def get_my_workout(workout_id):
     workout = db.get_or_404(Workout, workout_id)
-    if workout.user_id != get_demo_user().id:
+    if workout.user_id != current_user.id:
         abort(404)
     return workout
 
@@ -139,18 +127,23 @@ def login():
     return render_template("login.html", error=error)
 
 @app.route("/logout", methods=["POST"])
+@login_required
 def logout():
     logout_user()
     return redirect(url_for("login"))    
 
 @app.route("/")
 def home():
-    my_workouts = get_workouts()
+    if current_user.is_authenticated:
+        count = len(get_workouts())
+    else:
+        count = 0
     # Pass only the count; the homepage doesn't need the workouts themselves
-    return render_template("home.html", sessions=len(my_workouts))
+    return render_template("home.html", sessions=count)
 
 
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add():
     error = None
     if request.method == "POST":
@@ -168,13 +161,13 @@ def add():
         else:
             # Runs only when validation passed. Find or create this user's workout
             # for the date, then the exercise inside it, then add the set.    
-            user = get_demo_user()
+            user = current_user
 
             # The database column is a real date, so convert the string from the form
             workout_date =  datetime.strptime(date, "%Y-%m-%d").date()
             workout = Workout.query.filter_by(user_id=user.id, date=workout_date).first()
             if workout is None:
-                workout = Workout(date=workout_date, athlete=user)
+                workout = Workout(date=workout_date, user_id=current_user.id)
                 db.session.add(workout)
 
             name = request.form["exercise"].strip()
@@ -196,24 +189,28 @@ def add():
 
 
 @app.route("/tracker")
+@login_required
 def show_workout():
     my_workout = get_workouts()
     # The template loops over this list: workouts > exercises > sets
     return render_template("sessions.html", workouts=my_workout)
 
 @app.route("/stats")
+@login_required
 def stats():
     workouts = get_workouts()
     result = max_weight_by_exercise(workouts)
     return render_template("stats.html", stat=result)
 
 @app.route("/progress/<name>")     # <name> in the URL becomes the function argument.
+@login_required
 def progress(name):
     workouts = get_workouts()
     points = weight_over_time(workouts, name)
     return render_template("progress.html", name=name, points=points)
 
 @app.route("/set/<int:set_id>/delete", methods=["POST"])
+@login_required
 def delete_set(set_id):
     workout_set = get_my_set(set_id)
     exercise = workout_set.exercise
@@ -233,6 +230,7 @@ def delete_set(set_id):
     return redirect(url_for("show_workout"))
 
 @app.route("/set/<int:set_id>/edit", methods=["GET", "POST"])
+@login_required
 def edit_set(set_id):
     s = get_my_set(set_id)
     error = None
@@ -249,6 +247,7 @@ def edit_set(set_id):
     return render_template("edit_set.html", s=s, error=error)
 
 @app.route("/exercise/<int:exercise_id>/delete", methods=["POST"])
+@login_required
 def delete_exercise(exercise_id):
     exercise = get_my_exercise(exercise_id)
     workout = exercise.workout
@@ -260,6 +259,7 @@ def delete_exercise(exercise_id):
     return redirect(url_for("show_workout"))
     
 @app.route("/workout/<int:workout_id>/delete", methods=["POST"])
+@login_required
 def delete_workout(workout_id):
     workout = get_my_workout(workout_id)
     db.session.delete(workout)

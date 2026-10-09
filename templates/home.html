@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
-
 {% block content %}
   <h1>Workout Tracker</h1>
-  <p>Track the workouts you've done.</p>
-
-  <a href="{{ url_for('add') }}">Add a session</a>
-  <a href="{{ url_for('show_workout') }}">View past sessions</a>
-
-  {# "sessions" is the workout count passed in by home() in app.py #}
-  <p>{{ sessions }} session(s) logged so far.</p>
+  {% if current_user.is_authenticated %}
+    <p>{{ sessions }} workout(s) logged so far.</p>
+    <a href="{{ url_for('add') }}">Add a workout</a>
+{% else %}
+    <p>Track the workouts you've done and their details.</p>
+    <a href="{{ url_for('register') }}">Create an account</a>
+    <a href="{{ url_for('login') }}">Log in</a>
+{% endif %}
 {% endblock %}
