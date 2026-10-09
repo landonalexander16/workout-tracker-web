@@ -71,9 +71,15 @@ def parse_set_form(form):
     if weight < 0: # zero is allowed (bodyweight exercises)
         raise ValueError ("Weight must be a number greater than or equal to zero.")
     reps = int(form["reps"])
-    if reps < 0:
+    if reps <= 0:
         raise ValueError("Reps must be a number greater than zero.")
     return weight, reps
+
+def get_my_set(set_id):
+    s = db.get_or_404(WorkoutSet, set_id)
+    if s.exercise.workout.user_id != get_demo_user().id:
+        abort(404)
+    return s
 
 @app.route("/")
 def home():
@@ -86,7 +92,7 @@ def home():
 def add():
     error = None
     if request.method == "POST":
-        # Validate everything begore touching the database
+        # Validate everything before touching the database
         # so bad input can never be saved
         try: 
             date = request.form["date"]
@@ -144,6 +150,25 @@ def progress(name):
     workouts = get_workouts()
     points = weight_over_time(workouts, name)
     return render_template("progress.html", name=name, points=points)
+
+@app.route("/set/<int:set_id>/delete", methods=["POST"])
+def delete_set(set_id):
+    workout_set = get_my_set(set_id)
+    exercise = workout_set.exercise
+    workout = exercise.workout
+
+    db.session.delete(workout_set)
+    db.session.commit()
+
+    if not exercise.sets:
+        db.session.delete(exercise)
+        db.session.commit()
+
+        if not workout.exercises:
+            db.session.delete(workout)
+            db.session.commit()
+
+    return redirect(url_for("show_workout"))
 
 with app.app_context():
     db.create_all()   # creates any missing tables on startup; never alters existing ones

@@ -17,6 +17,10 @@
                 {% for s in exercise.sets %}
                 <li> Weight: {{ s.weight }}
                     Reps: {{ s.reps }}
+                    <form method="post" action="{{ url_for('delete_set', set_id=s.id) }}"
+                        onsubmit="return confirm('Delete this set?')">
+                        <button type="submit">Delete</button>
+                    </form>
                 </li>
                 {% endfor %}
             </ul>
