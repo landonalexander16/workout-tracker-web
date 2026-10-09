@@ -5,7 +5,7 @@
 {% block content %}
 <h1> My workouts</h1>
 {% if workouts %}    
-    {# "workouts" is the list of workouts from get_workouts() in app.py. #}
+    {# "workouts" is the list of Workout rows passed in by show_workout() in app.py. #}
     {# Loops mirror the data: workouts > exercises > sets #}
     {% for workout in workouts %}
     <h2>{{ workout.date }}</h2>

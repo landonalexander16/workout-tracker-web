@@ -9,6 +9,6 @@
   <a href="{{ url_for('add') }}">Add a session</a>
   <a href="{{ url_for('show_workout') }}">View past sessions</a>
 
-  {# "sessions" is the count passed in by the home() route in app.py #}
+  {# "sessions" is the workout count passed in by home() in app.py #}
   <p>{{ sessions }} session(s) logged so far.</p>
 {% endblock %}

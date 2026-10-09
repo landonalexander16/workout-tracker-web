@@ -1,5 +1,7 @@
 """Data models for the workout tracker: Sets, Exercise, Session, and WorkoutTracker.
 
+Used only for the one-time import of the old data.
+
 Ported from the original command-line version:
 https://github.com/landonalexander16/workout-tracker
 
