@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Add Sessions{% endblock %}
+{% block title %}Logged Workouts{% endblock %}
 
 {% block content %}
 <h1> My workouts</h1>
-    {# "workout" is the WorkoutTracker passed in by show_tracker() in app.py. #}
-    {# Loops mirror the data: sessions > exercises > sets #}
-    {% for session in workout.sessions %}
-    <h2>{{ session.date }}</h2>
+{% if workouts %}    
+    {# "workouts" is the list of workouts from get_workouts() in app.py. #}
+    {# Loops mirror the data: workouts > exercises > sets #}
+    {% for workout in workouts %}
+    <h2>{{ workout.date }}</h2>
     <ul>
-        {% for exercise in session.exercises %}
+        {% for exercise in workout.exercises %}
         <li> {{ exercise.name }} 
             <ul>
                 {# "s" instead of "set", which is also a Jinja keyword #}
@@ -23,4 +24,7 @@
         {% endfor %}
     </ul>
     {% endfor %}
+{% else %}
+    <p>There are no logged sessions currently.</p>
+{% endif %}
 {% endblock %}

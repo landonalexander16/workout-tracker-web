@@ -14,7 +14,19 @@ from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///workout.db"
 db.init_app(app)
-    
+
+def get_demo_user():
+    user = User.query.filter_by(username="demo").first()
+    if user is None:
+        user = User(username="demo", password_hash="placeholder")
+        db.session.add(user)
+        db.session.commit()
+    return user
+
+def get_workouts():
+    user = get_demo_user()
+    return Workout.query.filter_by(user_id=user.id).order_by(Workout.date).all()
+
 def load_tracker():
     # No file yet (first run or fresh clone): start with an empty tracker
     if not os.path.exists("workout_data.json"):
@@ -69,9 +81,9 @@ def weight_over_time(tracker, name):
 
 @app.route("/")
 def home():
-    my_tracker = load_tracker()
+    my_workouts = get_workouts()
     # Pass only the count; homepage doesn't need the full tracker
-    return render_template("home.html", sessions=len(my_tracker.sessions))
+    return render_template("home.html", sessions=len(my_workouts))
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -97,11 +109,7 @@ def add():
             error = str(e)
 
         else:    
-            user = User.query.filter_by(username="demo").first()
-            if user is None:
-                user = User(username="demo", password_hash="placeholder")
-                db.session.add(user)
-                db.session.commit()
+            user = get_demo_user()
 
             workout_date =  datetime.strptime(date, "%Y-%m-%d").date()
             workout = Workout.query.filter_by(user_id=user.id, date=workout_date).first()
@@ -128,10 +136,9 @@ def add():
 
 
 @app.route("/tracker")
-def show_tracker():
-    my_tracker = load_tracker()
-    # The template refers to this object as "workout"
-    return render_template("sessions.html", workout=my_tracker)
+def show_workout():
+    my_workout = get_workouts()
+    return render_template("sessions.html", workouts=my_workout)
 
 @app.route("/stats")
 def stats():
@@ -146,7 +153,6 @@ def progress(name):
 
 with app.app_context():
     db.create_all()
-
 
 if __name__ == "__main__":
     app.run(debug=True) # debug mode is for development only; turn off before deploying
