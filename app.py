@@ -7,10 +7,7 @@ models in db_models.py. Every workout currently belongs to a placeholder "demo"
 user; real accounts come later.
 """
 
-import json
-from models import WorkoutTracker, Session, Exercise, Sets
 from flask import Flask, render_template, request, redirect, url_for
-import os
 from datetime import datetime
 from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 
@@ -34,23 +31,6 @@ def get_workouts():
     """Return the demo user's workouts, oldest first (the database sorts by date)."""
     user = get_demo_user()
     return Workout.query.filter_by(user_id=user.id).order_by(Workout.date).all()
-
-def load_tracker():
-    """Read the old workout_data.json. Only used for the one-time import into the database."""
-    # No file yet (first run or fresh clone): start with an empty tracker
-    if not os.path.exists("workout_data.json"):
-        return WorkoutTracker()
-
-    try:
-        with open("workout_data.json", "r") as f:
-            data = json.load(f)
-        return WorkoutTracker.from_dict(data)
-    except(json.JSONDecodeError, KeyError):
-        # Unreadable file: move it aside instead of deleting it, so the data
-        # can be inspected or repaired by hand. Done after the with-block closes,
-        # because Windows won't move a file that's still open.
-        os.replace("workout_data.json", "workout_data.corrupt.json")
-        return WorkoutTracker()
 
 def max_weight_by_exercise(workouts):
     """Return {exercise name (lowercase): (weight, reps)} for each exercise's best set.
