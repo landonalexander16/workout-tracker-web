@@ -7,7 +7,7 @@ models in db_models.py. Every workout currently belongs to a placeholder "demo"
 user; real accounts come later.
 """
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort
 from datetime import datetime
 from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 
@@ -66,6 +66,14 @@ def weight_over_time(workouts, name):
             points.append((str(workout.date), best))  # str() because tojson would turn a date object into a long GMT-style string
     return points
 
+def parse_set_form(form):
+    weight = float(form["weight"])
+    if weight < 0: # zero is allowed (bodyweight exercises)
+        raise ValueError ("Weight must be a number greater than or equal to zero.")
+    reps = int(form["reps"])
+    if reps < 0:
+        raise ValueError("Reps must be a number greater than zero.")
+    return weight, reps
 
 @app.route("/")
 def home():
@@ -78,21 +86,14 @@ def home():
 def add():
     error = None
     if request.method == "POST":
-        # Validate everything begore touching the tracker or the file,
+        # Validate everything begore touching the database
         # so bad input can never be saved
         try: 
             date = request.form["date"]
             # Called only as a check: raises ValueError on a bad format.
             datetime.strptime(date, "%Y-%m-%d")
+            weight, reps = parse_set_form(request.form)
             
-            weight = float(request.form["weight"])
-            if weight < 0: # zero is allowed (bodyweight exercises)
-                raise ValueError ("Weight must be a number greater than or equal to zero.")
-            
-            reps = int(request.form["reps"])
-            if reps <= 0:
-                raise ValueError("Reps must be a number greater than zero.")
-
         except ValueError as e: # falls through to re-render the form with the message
             error = str(e)
 
