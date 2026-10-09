@@ -83,7 +83,6 @@ def add():
         try: 
             date = request.form["date"]
             # Called only as a check: raises ValueError on a bad format.
-            # date stays a string so it compares, sorts and serializes cleanly.
             datetime.strptime(date, "%Y-%m-%d")
             
             weight = float(request.form["weight"])
@@ -98,50 +97,33 @@ def add():
             error = str(e)
 
         else:    
-            # Runs only when validation passed
-            tracker = load_tracker()
-            sets = Sets(weight, reps)
+            user = User.query.filter_by(username="demo").first()
+            if user is None:
+                user = User(username="demo", password_hash="placeholder")
+                db.session.add(user)
+                db.session.commit()
+
+            workout_date =  datetime.strptime(date, "%Y-%m-%d").date()
+            workout = Workout.query.filter_by(user_id=user.id, date=workout_date).first()
+            if workout is None:
+                workout = Workout(date=workout_date, athlete=user)
+                db.session.add(workout)
+
             name = request.form["exercise"].strip()
-
-            # Find the session for this date, or create it
-            session = None
-            for s in tracker.sessions:
-                if s.date == date:
-                    session = s
-                    break
-
-            if session is None:
-                session = Session(date)
-                tracker.add_session(session)
-
-            # Find the exercise within that session, or create it.
-            # Names are compared case-insensitively so "Bench" and "bench" merge.
-            exercise = None
-            for e in session.exercises:
+            workout_exercise = None
+            for e in workout.exercises:
                 if e.name.lower() == name.lower():
-                    exercise = e
+                    workout_exercise = e
                     break
-
-            if exercise is None:
-                exercise = Exercise(name)
-                session.add_exercise(exercise)
-
-
-            exercise.add_sets(sets)
-
-            # Dates are YYYY-MM-DD strings, so alphabetical order is chronological order
-            tracker.sessions = sorted(tracker.sessions, key = lambda s : s.date)
-
-            # Writes the whole tracker back; saving only the new session would
-            # overwrite everything already in the file
-            with open("workout_data.json", "w") as f:
-                json.dump(tracker.to_dict(), f, indent=4)
-
-            # Redirect after a sucessfull POST so refreshing the page
-            # doesn't resubmit the form
-            return redirect(url_for("show_tracker"))
+            if workout_exercise is None:
+                workout_exercise = WorkoutExercise(name=name, workout=workout)
+                db.session.add(workout_exercise)
+            
+            db.session.add(WorkoutSet(exercise = workout_exercise, weight=weight, reps=reps))
+            db.session.commit()
+            return redirect(url_for("add"))
         
-    # Reached on a plain FET, or when validation failed (error is set)
+    # Reached on a plain GET, or when validation failed (error is set)
     return render_template("add.html", error=error)
 
 
