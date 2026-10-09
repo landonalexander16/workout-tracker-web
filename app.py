@@ -11,8 +11,8 @@ from flask import Flask, render_template, request, redirect, url_for, abort
 from datetime import datetime
 from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
 import os
-from flask_login import LoginManager, UserMixin, login_user
-from werkzeug.security import generate_password_hash
+from flask_login import LoginManager, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///workout.db" # file is created in instance/
@@ -123,6 +123,25 @@ def register():
             login_user(user)
             return redirect(url_for("home"))
     return render_template("register.html", error=error)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        username = request.form["username"].strip().lower()
+        password = request.form["password"]
+        user = User.query.filter_by(username=username).first()
+        if user is None or not check_password_hash(user.password_hash, password):
+            error = "Invalid username or password."
+        else: 
+            login_user(user)
+            return redirect(url_for("home"))
+    return render_template("login.html", error=error)
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    logout_user()
+    return redirect(url_for("login"))    
 
 @app.route("/")
 def home():
