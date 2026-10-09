@@ -81,6 +81,18 @@ def get_my_set(set_id):
         abort(404)
     return s
 
+def get_my_exercise(exercise_id):
+    exercise = db.get_or_404(WorkoutExercise, exercise_id)
+    if exercise.workout.user_id != get_demo_user().id:
+        abort(404)
+    return exercise
+
+def get_my_workout(workout_id):
+    workout = db.get_or_404(Workout, workout_id)
+    if workout.user_id != get_demo_user().id:
+        abort(404)
+    return workout
+
 @app.route("/")
 def home():
     my_workouts = get_workouts()
@@ -185,6 +197,24 @@ def edit_set(set_id):
             db.session.commit()
             return redirect(url_for("show_workout"))
     return render_template("edit_set.html", s=s, error=error)
+
+@app.route("/exercise/<int:exercise_id>/delete", methods=["POST"])
+def delete_exercise(exercise_id):
+    exercise = get_my_exercise(exercise_id)
+    workout = exercise.workout
+    db.session.delete(exercise)
+    db.session.commit()
+    if not workout.exercises:
+        db.session.delete(workout)
+        db.session.commit()
+    return redirect(url_for("show_workout"))
+    
+@app.route("/workout/<int:workout_id>/delete", methods=["POST"])
+def delete_workout(workout_id):
+    workout = get_my_workout(workout_id)
+    db.session.delete(workout)
+    db.session.commit()
+    return redirect(url_for("show_workout"))
 
 
 with app.app_context():
