@@ -10,10 +10,23 @@ user; real accounts come later.
 from flask import Flask, render_template, request, redirect, url_for, abort
 from datetime import datetime
 from db_models import db, User, Workout, WorkoutExercise, WorkoutSet
+import os
+from flask_login import LoginManager, UserMixin, login_user
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///workout.db" # file is created in instance/
 db.init_app(app)   # must come after the config line, because it reads the database path
+
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me")
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"    
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
 
 def get_demo_user():
     """Return the placeholder user, creating it on first use.
@@ -92,6 +105,24 @@ def get_my_workout(workout_id):
     if workout.user_id != get_demo_user().id:
         abort(404)
     return workout
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    error = None
+    if request.method == "POST":
+        username = request.form["username"].strip().lower()
+        password = request.form["password"]
+        if not username or len(password) < 8:
+            error = "Enter an username and password of at least 8 characters"
+        elif User.query.filter_by(username=username).first():
+            error = "That username is already registered"
+        else:
+            user = User(username=username, password_hash=generate_password_hash(password))
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            return redirect(url_for("home"))
+    return render_template("register.html", error=error)
 
 @app.route("/")
 def home():

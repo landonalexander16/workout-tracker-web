@@ -5,10 +5,11 @@ let code move between levels like lists: workout.exercises, exercise.sets.
 """
 
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"  # "user" is a reserved word in PostgreSQL
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)

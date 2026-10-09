@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+{% if error %}<p style="color: red">{{ error }}</p>{% endif %}
+<form method="post">
+    <label>Username <input type="test" name="username" minlength="5" required></label>
+    <label>Password <input type="password" name="password" minlength="8" required> </label>
+    <button type="submit">Save</button>
+    <a href="{{ url_for('show_workout') }}">Cancel</a>
+</form>
+{% endblock %}
