@@ -21,6 +21,7 @@
                         onsubmit="return confirm('Delete this set?')">
                         <button type="submit">Delete</button>
                     </form>
+                    <a href="{{ url_for('edit_set', set_id=s.id) }}">Edit</a>
                 </li>
                 {% endfor %}
             </ul>
@@ -29,6 +30,6 @@
     </ul>
     {% endfor %}
 {% else %}
-    <p>There are no logged sessions currently.</p>
+    <p>There are no logged workouts currently.</p>
 {% endif %}
 {% endblock %}

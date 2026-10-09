@@ -170,6 +170,23 @@ def delete_set(set_id):
 
     return redirect(url_for("show_workout"))
 
+@app.route("/set/<int:set_id>/edit", methods=["GET", "POST"])
+def edit_set(set_id):
+    s = get_my_set(set_id)
+    error = None
+    if request.method == "POST":
+        try:
+            weight, reps = parse_set_form(request.form)
+        except ValueError as e:
+            error = str(e)
+        else:
+            s.weight = weight
+            s.reps = reps
+            db.session.commit()
+            return redirect(url_for("show_workout"))
+    return render_template("edit_set.html", s=s, error=error)
+
+
 with app.app_context():
     db.create_all()   # creates any missing tables on startup; never alters existing ones
 
