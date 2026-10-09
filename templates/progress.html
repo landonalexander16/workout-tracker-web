@@ -1,11 +1,11 @@
 {# Line chart of the heaviest weight lifted per date for one exercise. #}
-{# "title" (the exercise name) and "points" (a list of [date, weight] pairs) #}
+{# "name" (the exercise name) and "points" (a list of [date, weight] pairs) #}
 {# are passed in by the progress route in app.py. #}
 {% extends "base.html" %}
 {% block title %}Progress{% endblock %}
 
 {% block content %}
-<h1> {{ title|title }} Weight by Date</h1>
+<h1> {{ name|title }}: Weight by Date</h1>
 
 {# An unknown exercise gives an empty list, so show a message instead of a blank chart #}
 {% if points %}

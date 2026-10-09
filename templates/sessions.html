@@ -1,26 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Add Sessions{% endblock %}
+{% block title %}Logged Workouts{% endblock %}
 
 {% block content %}
 <h1> My workouts</h1>
-    {# "workout" is the WorkoutTracker passed in by show_tracker() in app.py. #}
-    {# Loops mirror the data: sessions > exercises > sets #}
-    {% for session in workout.sessions %}
-    <h2>{{ session.date }}</h2>
+{% if workouts %}    
+    {# "workouts" is the list of Workout rows passed in by show_workout() in app.py. #}
+    {# Loops mirror the data: workouts > exercises > sets #}
+    {% for workout in workouts %}
+    <h2>{{ workout.date }}</h2>
     <ul>
-        {% for exercise in session.exercises %}
+        {% for exercise in workout.exercises %}
         <li> {{ exercise.name }} 
             <ul>
                 {# "s" instead of "set", which is also a Jinja keyword #}
                 {% for s in exercise.sets %}
                 <li> Weight: {{ s.weight }}
                     Reps: {{ s.reps }}
+                    <form method="post" action="{{ url_for('delete_set', set_id=s.id) }}"
+                        onsubmit="return confirm('Delete this set?')">
+                        <button type="submit">Delete</button>
+                    </form>
+                    <a href="{{ url_for('edit_set', set_id=s.id) }}">Edit</a>
                 </li>
                 {% endfor %}
             </ul>
+            <form method="post" action="{{ url_for('delete_exercise', exercise_id=exercise.id) }}"
+                onsubmit="return confirm('Delete this exercise and all its sets?')">
+                <button type="submit">Delete Exercise</button>
+            </form>
         </li>
         {% endfor %}
+        <form method="post" action="{{ url_for('delete_workout', workout_id=workout.id) }}"
+            onsubmit="return confirm('Delete this entire workout?')">
+            <button type="submit">Delete Workout</button>
+        </form>
     </ul>
     {% endfor %}
+{% else %}
+    <p>There are no logged workouts currently.</p>
+{% endif %}
 {% endblock %}
