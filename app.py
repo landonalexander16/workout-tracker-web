@@ -1,10 +1,14 @@
 """Flask web interface for the workout tracker.
 
-Routes: home (workout count), add (log a set), show_workout (view history),
-        stats (max weight and reps per exercise), progress (max weight over time chart).
-Data is stored in a SQLite database (instance/workout.db) through the SQLAlchemy
-models in db_models.py. Every workout currently belongs to a placeholder "demo"
-user; real accounts come later.
+Routes: home (workout count), register / login / logout (accounts), add (log a set),
+        show_workout (view history), edit_set, delete_set, delete_exercise and
+        delete_workout (fix mistakes), stats (max weight and reps per exercise),
+        progress (max weight over time chart).
+
+Data is stored through the SQLAlchemy models in db_models.py: SQLite locally
+(instance/workout.db), or Postgres when the DATABASE_URL environment variable is set.
+Every workout belongs to a user, and every route that reads or changes workouts
+requires login and checks ownership.
 """
 
 from flask import Flask, render_template, request, redirect, url_for, abort
@@ -15,10 +19,15 @@ from flask_login import LoginManager, login_user, logout_user, current_user, log
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///workout.db" # file is created in instance/
-db.init_app(app)   # must come after the config line, because it reads the database path
-
+uri = os.environ.get("DATABASE_URL", "sqlite:///library.db")
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
+elif uri.startswith("postgresql://"):
+    uri = uri.replace("postgresql://", "postgresql+psycopg2://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = uri
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+db.init_app(app)   # must come after the config lines, because it reads the database path
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -27,9 +36,10 @@ login_manager.login_view = "login"
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+    """Flask-Login calls this on every request to turn the id in the session cookie back into a User."""
 
 def get_workouts():
-    """Return the demo user's workouts, oldest first (the database sorts by date)."""
+    """Return the logged-in user's workouts, oldest first (the database sorts by date)."""
     user = current_user
     return Workout.query.filter_by(user_id=user.id).order_by(Workout.date).all()
 
@@ -68,6 +78,10 @@ def weight_over_time(workouts, name):
     return points
 
 def parse_set_form(form):
+    """Return (weight, reps) from a submitted form, or raise ValueError with a message for the user.
+
+    Zero weight is allowed (bodyweight exercises); reps must be at least 1.
+    """
     weight = float(form["weight"])
     if weight < 0: # zero is allowed (bodyweight exercises)
         raise ValueError ("Weight must be a number greater than or equal to zero.")
@@ -77,18 +91,30 @@ def parse_set_form(form):
     return weight, reps
 
 def get_my_set(set_id):
+    """Return the set with this id, or abort with 404 if it doesn't exist or isn't the current user's.
+
+    404 (not 403) so nobody can tell whether another user's id exists.
+    """
     s = db.get_or_404(WorkoutSet, set_id)
     if s.exercise.workout.user_id != current_user.id:
         abort(404)
     return s
 
 def get_my_exercise(exercise_id):
+    """Return the exercise with this id, or abort with 404 if it doesn't exist or isn't the current user's.
+
+    404 (not 403) so nobody can tell whether another user's id exists.
+    """
     exercise = db.get_or_404(WorkoutExercise, exercise_id)
     if exercise.workout.user_id != current_user.id:
         abort(404)
     return exercise
 
 def get_my_workout(workout_id):
+    """Return the workout with this id, or abort with 404 if it doesn't exist or isn't the current user's.
+
+    404 (not 403) so nobody can tell whether another user's id exists.
+    """
     workout = db.get_or_404(Workout, workout_id)
     if workout.user_id != current_user.id:
         abort(404)
@@ -101,7 +127,7 @@ def register():
         username = request.form["username"].strip().lower()
         password = request.form["password"]
         if not username or len(password) < 8:
-            error = "Enter an username and password of at least 8 characters"
+            error = "Enter a username and password of at least 8 characters"
         elif User.query.filter_by(username=username).first():
             error = "That username is already registered"
         else:
@@ -269,6 +295,6 @@ def delete_workout(workout_id):
 
 with app.app_context():
     db.create_all()   # creates any missing tables on startup; never alters existing ones
-
+   
 if __name__ == "__main__":
-    app.run(debug=True) # debug mode is for development only; turn off before deploying
+    app.run() 
