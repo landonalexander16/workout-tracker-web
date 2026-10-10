@@ -27,6 +27,8 @@ elif uri.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = uri
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE") == "1"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 db.init_app(app)   # must come after the config lines, because it reads the database path
 
 login_manager = LoginManager()
